@@ -42,7 +42,7 @@ const elements = {
     exportCsvBtn: document.getElementById("export-csv-btn"),
     
     // Controls
-    themeToggleBtn: document.getElementById("theme-toggle-btn"),
+    themeCheckbox: document.getElementById("theme-checkbox"),
     refreshBtn: document.getElementById("refresh-btn"),
     retryBtn: document.getElementById("retry-btn"),
     
@@ -63,31 +63,35 @@ document.addEventListener("DOMContentLoaded", () => {
 // Theme Management
 function initTheme() {
     const savedTheme = localStorage.getItem("theme") || "dark";
+    const themeCheckbox = document.getElementById("theme-checkbox");
+    
     if (savedTheme === "light") {
         document.body.classList.remove("dark-theme");
         document.body.classList.add("light-theme");
+        if (themeCheckbox) themeCheckbox.checked = true;
     } else {
         document.body.classList.add("dark-theme");
         document.body.classList.remove("light-theme");
-    }
-}
-
-function toggleTheme() {
-    if (document.body.classList.contains("light-theme")) {
-        document.body.classList.remove("light-theme");
-        document.body.classList.add("dark-theme");
-        localStorage.setItem("theme", "dark");
-    } else {
-        document.body.classList.remove("dark-theme");
-        document.body.classList.add("light-theme");
-        localStorage.setItem("theme", "light");
+        if (themeCheckbox) themeCheckbox.checked = false;
     }
 }
 
 // Setup Event Listeners
 function setupEventListeners() {
-    // Theme Toggle
-    elements.themeToggleBtn.addEventListener("click", toggleTheme);
+    // Theme Switch
+    if (elements.themeCheckbox) {
+        elements.themeCheckbox.addEventListener("change", (e) => {
+            if (e.target.checked) {
+                document.body.classList.remove("dark-theme");
+                document.body.classList.add("light-theme");
+                localStorage.setItem("theme", "light");
+            } else {
+                document.body.classList.remove("light-theme");
+                document.body.classList.add("dark-theme");
+                localStorage.setItem("theme", "dark");
+            }
+        });
+    }
     
     // Refresh & Retry
     elements.refreshBtn.addEventListener("click", () => fetchReleases(true));

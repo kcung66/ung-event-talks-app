@@ -31,10 +31,14 @@
                 <h1>BigQuery <span class="gradient-text">Release Notes</span></h1>
             </div>
             <div class="header-controls">
-                <button id="theme-toggle-btn" class="control-btn" title="Toggle Theme" aria-label="Toggle dark/light theme">
-                    <i class="fa-solid fa-sun icon-light"></i>
-                    <i class="fa-solid fa-moon icon-dark"></i>
-                </button>
+                <div class="theme-switch-container">
+                    <i class="fa-solid fa-moon switch-label-icon dark" title="Dark Mode"></i>
+                    <label class="switch" for="theme-checkbox">
+                        <input type="checkbox" id="theme-checkbox" aria-label="Toggle dark/light theme">
+                        <span class="slider"></span>
+                    </label>
+                    <i class="fa-solid fa-sun switch-label-icon light" title="Light Mode"></i>
+                </div>
                 <button id="refresh-btn" class="control-btn" title="Refresh Release Notes" aria-label="Refresh notes">
                     <i class="fa-solid fa-rotate"></i>
                 </button>
