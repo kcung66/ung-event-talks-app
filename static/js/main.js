@@ -39,6 +39,7 @@ const elements = {
     
     // Feed Summary
     feedCountSummary: document.getElementById("feed-count-summary"),
+    exportCsvBtn: document.getElementById("export-csv-btn"),
     
     // Controls
     themeToggleBtn: document.getElementById("theme-toggle-btn"),
@@ -91,6 +92,9 @@ function setupEventListeners() {
     // Refresh & Retry
     elements.refreshBtn.addEventListener("click", () => fetchReleases(true));
     elements.retryBtn.addEventListener("click", () => fetchReleases(true));
+    
+    // Export CSV
+    elements.exportCsvBtn.addEventListener("click", exportToCSV);
     
     // Search input
     elements.searchInput.addEventListener("input", (e) => {
@@ -539,6 +543,9 @@ function createReleaseCard(item) {
                 <span class="category-tag ${typeClass}">${displayType}</span>
             </div>
             <div class="card-actions">
+                <button class="card-action-btn copy-text-btn" title="Copy release details to clipboard" aria-label="Copy text">
+                    <i class="fa-regular fa-copy"></i>
+                </button>
                 <button class="card-action-btn share-btn" title="Copy link to this release" aria-label="Copy link">
                     <i class="fa-regular fa-share-from-square"></i>
                 </button>
@@ -551,6 +558,20 @@ function createReleaseCard(item) {
             ${contentHtml}
         </div>
     `;
+    
+    // Wire up copy text button
+    card.querySelector(".copy-text-btn").addEventListener("click", () => {
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = item.content;
+        const plainText = `${item.date} - [${item.type}]\n\n${tempDiv.innerText || tempDiv.textContent}`;
+        navigator.clipboard.writeText(plainText)
+            .then(() => {
+                showToast("Copied release text to clipboard!");
+            })
+            .catch(err => {
+                console.error("Could not copy text: ", err);
+            });
+    });
     
     // Wire up share button
     card.querySelector(".share-btn").addEventListener("click", () => {
@@ -584,4 +605,51 @@ function showError(msg) {
     
     elements.errorMessage.innerText = msg;
     elements.errorContainer.classList.remove("hidden");
+}
+
+// Export filtered releases to CSV file
+function exportToCSV() {
+    if (state.filteredReleases.length === 0) {
+        showToast("No releases to export.");
+        return;
+    }
+    
+    // Headers
+    const headers = ["Date", "Updated Date", "Type", "Content", "Official Link"];
+    
+    // Rows
+    const rows = state.filteredReleases.map(item => {
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = item.content;
+        const cleanContent = (tempDiv.innerText || tempDiv.textContent).replace(/"/g, '""').trim();
+        
+        return [
+            `"${item.date.replace(/"/g, '""')}"`,
+            `"${item.updated.replace(/"/g, '""')}"`,
+            `"${item.type.replace(/"/g, '""')}"`,
+            `"${cleanContent}"`,
+            `"${item.link.replace(/"/g, '""')}"`
+        ];
+    });
+    
+    // Combine headers and rows with UTF-8 BOM
+    const csvContent = "\uFEFF" + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    
+    // Download Blob
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    
+    const dateStr = new Date().toISOString().slice(0, 10);
+    const categorySuffix = state.selectedCategory !== "all" ? `_${state.selectedCategory}` : "";
+    const filename = `bigquery_releases${categorySuffix}_${dateStr}.csv`;
+    
+    link.setAttribute("download", filename);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showToast("CSV file exported successfully!");
 }

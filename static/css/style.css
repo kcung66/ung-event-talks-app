@@ -594,6 +594,43 @@ body.light-theme .filter-tag.active {
     color: var(--text-secondary);
 }
 
+.feed-header-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.export-btn {
+    background: var(--accent-purple-glow);
+    border: 1px solid var(--accent-purple);
+    color: var(--text-primary);
+    padding: 0.4rem 0.85rem;
+    border-radius: 8px;
+    font-family: var(--font-primary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: var(--transition-fast);
+}
+
+.export-btn:hover {
+    background: rgba(139, 92, 246, 0.25);
+    border-color: var(--accent-purple);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.15);
+}
+
+body.light-theme .export-btn {
+    background: rgba(124, 58, 237, 0.08);
+}
+
+body.light-theme .export-btn:hover {
+    background: rgba(124, 58, 237, 0.15);
+}
+
 .releases-container {
     display: flex;
     flex-direction: column;
