@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BigQuery Release Notes Explorer</title>
+    <meta name="description" content="A modern, interactive dashboard to search, filter, and explore Google Cloud BigQuery release notes and updates.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="dark-theme">
+    <div class="background-decorations">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <header class="app-header">
+        <div class="header-container">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-database"></i>
+                    <i class="fa-solid fa-bolt overlay-icon"></i>
+                </div>
+                <h1>BigQuery <span class="gradient-text">Release Notes</span></h1>
+            </div>
+            <div class="header-controls">
+                <button id="theme-toggle-btn" class="control-btn" title="Toggle Theme" aria-label="Toggle dark/light theme">
+                    <i class="fa-solid fa-sun icon-light"></i>
+                    <i class="fa-solid fa-moon icon-dark"></i>
+                </button>
+                <button id="refresh-btn" class="control-btn" title="Refresh Release Notes" aria-label="Refresh notes">
+                    <i class="fa-solid fa-rotate"></i>
+                </button>
+                <a href="https://cloud.google.com/bigquery/docs/release-notes" target="_blank" rel="noopener" class="docs-btn">
+                    <span class="btn-text">Official Docs</span>
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <!-- Dashboard Overview / Stats Cards -->
+        <section class="stats-section" aria-label="Release Statistics">
+            <div class="stat-card glass-panel" id="stat-total">
+                <div class="stat-icon purple"><i class="fa-solid fa-list-check"></i></div>
+                <div class="stat-info">
+                    <span class="stat-label">Total Releases</span>
+                    <h2 class="stat-value" id="val-total">-</h2>
+                </div>
+            </div>
+            <div class="stat-card glass-panel" id="stat-features">
+                <div class="stat-icon green"><i class="fa-solid fa-circle-plus"></i></div>
+                <div class="stat-info">
+                    <span class="stat-label">New Features</span>
+                    <h2 class="stat-value" id="val-features">-</h2>
+                </div>
+            </div>
+            <div class="stat-card glass-panel" id="stat-changes">
+                <div class="stat-icon blue"><i class="fa-solid fa-sliders"></i></div>
+                <div class="stat-info">
+                    <span class="stat-label">Changes</span>
+                    <h2 class="stat-value" id="val-changes">-</h2>
+                </div>
+            </div>
+            <div class="stat-card glass-panel" id="stat-fixes">
+                <div class="stat-icon orange"><i class="fa-solid fa-bug-slash"></i></div>
+                <div class="stat-info">
+                    <span class="stat-label">Fixes & Deprecations</span>
+                    <h2 class="stat-value" id="val-fixes">-</h2>
+                </div>
+            </div>
+        </section>
+
+        <!-- Search and Filter Panel -->
+        <section class="filter-section glass-panel" aria-label="Filters">
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="search-input" placeholder="Search releases by keyword (e.g. SQL, console, pricing)..." aria-label="Search releases">
+                <button id="clear-search-btn" class="clear-btn" aria-label="Clear search"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="filter-controls">
+                <div class="filter-group">
+                    <span class="filter-label"><i class="fa-solid fa-tags"></i> Categories:</span>
+                    <div class="filter-tags" id="category-filters">
+                        <button class="filter-tag active" data-type="all">All</button>
+                        <button class="filter-tag" data-type="feature"><span class="badge feature"></span> Features</button>
+                        <button class="filter-tag" data-type="change"><span class="badge change"></span> Changes</button>
+                        <button class="filter-tag" data-type="deprecation"><span class="badge deprecation"></span> Deprecations</button>
+                        <button class="filter-tag" data-type="fixed"><span class="badge fixed"></span> Fixes</button>
+                    </div>
+                </div>
+
+                <div class="filter-group-right">
+                    <div class="select-wrapper">
+                        <i class="fa-solid fa-calendar-days select-icon"></i>
+                        <select id="time-filter" aria-label="Filter by time range">
+                            <option value="all">All Time</option>
+                            <option value="30">Last 30 Days</option>
+                            <option value="90">Last 90 Days</option>
+                            <option value="365">Past Year</option>
+                        </select>
+                    </div>
+                    <div class="select-wrapper">
+                        <i class="fa-solid fa-sort select-icon"></i>
+                        <select id="sort-order" aria-label="Sort order">
+                            <option value="newest">Newest First</option>
+                            <option value="oldest">Oldest First</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Active Filters Display -->
+        <section id="active-filters-display" class="active-filters hidden" aria-label="Active filters summary">
+            <span>Filtering by:</span>
+            <div id="active-filters-list"></div>
+            <button id="reset-all-filters" class="reset-link-btn">Reset All</button>
+        </section>
+
+        <!-- Release Notes Feed -->
+        <section class="feed-section">
+            <div class="feed-header">
+                <h2 class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> Latest Releases</h2>
+                <div class="feed-info-text" id="feed-count-summary">Showing 0 releases</div>
+            </div>
+
+            <!-- Loader -->
+            <div id="loader" class="loader-container">
+                <div class="spinner"></div>
+                <p>Fetching the latest BigQuery release notes...</p>
+            </div>
+
+            <!-- Error State -->
+            <div id="error-container" class="error-panel glass-panel hidden">
+                <i class="fa-solid fa-circle-exclamation error-icon"></i>
+                <h3>Unable to load release notes</h3>
+                <p id="error-message">Something went wrong. Please check your internet connection and try again.</p>
+                <button id="retry-btn" class="action-btn"><i class="fa-solid fa-rotate"></i> Retry Connection</button>
+            </div>
+
+            <!-- Empty State -->
+            <div id="empty-state" class="empty-panel glass-panel hidden">
+                <i class="fa-solid fa-folder-open empty-icon"></i>
+                <h3>No release notes match your criteria</h3>
+                <p>Try refining your search terms or clearing the active filters.</p>
+                <button id="clear-all-btn" class="action-btn">Clear Filters</button>
+            </div>
+
+            <!-- Notes List -->
+            <div id="releases-list" class="releases-container">
+                <!-- Cards will be dynamically inserted here -->
+            </div>
+
+            <!-- Pagination -->
+            <div id="pagination-controls" class="pagination hidden">
+                <button id="prev-page" class="page-btn" disabled><i class="fa-solid fa-chevron-left"></i> Previous</button>
+                <span id="page-info" class="page-info">Page 1 of 1</span>
+                <button id="next-page" class="page-btn" disabled>Next <i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+        </section>
+    </main>
+
+    <footer class="app-footer">
+        <p>&copy; 2026 BigQuery Release Notes Explorer. All rights reserved.</p>
+        <p class="footer-subtext">Data fetched directly from the official Google Cloud BigQuery Release Notes RSS Feed.</p>
+    </footer>
+
+    <!-- Custom JavaScript -->
+    <script src="/static/js/main.js"></script>
+</body>
+</html>
